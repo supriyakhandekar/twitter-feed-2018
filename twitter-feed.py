@@ -15,6 +15,7 @@ import sqlite3
 
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'vnkdjnfjknfl1232#'
 socketio = SocketIO(app)
 
 @socketio.on('message')
@@ -33,3 +34,31 @@ if __name__ == "__main__":
     #db.create_all()
     #socketio.run(app)
     app.run(debug=True)
+
+
+var socket;
+
+$(document).ready(function() {
+#var socket = io.connect('http://localhost:5000/');
+var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+socket.on('connect', function() {
+  alert('test');
+  socket.emit('my event', {data: 'I\'m connected!'});
+  console.log('User has been connected!');
+});
+
+socket.on('message', function(msg) {
+  alert('received')
+  $('#messages').append("<li>"+msg+"</li>")
+});
+
+});
+
+
+$('#sendButton').on("click", function() {
+
+var myMessage = $('#myMessage').val()
+socket.send(myMessage)
+alert('sent!')
+});

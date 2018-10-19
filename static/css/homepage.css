@@ -1,0 +1,19 @@
+html,
+body {
+
+  font-family: sans-serif;
+  padding-left: 30px;
+
+}
+
+.header {
+
+  display: flex;
+
+}
+
+.user-chat {
+
+  color: #1dcaff;
+
+}

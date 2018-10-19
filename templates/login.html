@@ -1,0 +1,25 @@
+<html>
+    <head>
+      <link rel="stylesheet" href="{{ url_for('static', filename='css/homepage.css') }}">
+      <link href="https://fonts.googleapis.com/css?family=Fjalla+One|Teko:600|Varela+Round" rel="stylesheet">
+    </head>
+{% block content %}
+  <body>
+    <h1 class='header'>Sign In</h1>
+    <form action="" method="post" novalidate>
+        {{ form.hidden_tag() }}
+        <p>
+            {{ form.username.label }}<br>
+            {{ form.username(size=32) }}
+        </p>
+        <p>
+            {{ form.password.label }}<br>
+            {{ form.password(size=32) }}
+        </p>
+        <p>{{ form.remember_me() }} {{ form.remember_me.label }}</p>
+        <p>{{ form.submit()}}</p>
+    </form>
+    <p>New User? <a href="{{ url_for('register') }}">Click to Register!</a></p>
+  </body>
+{% endblock %}
+</html>
