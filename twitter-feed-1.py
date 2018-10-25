@@ -22,19 +22,15 @@ import os
 import sqlite3
 
 project_dir = os.path.dirname(os.path.abspath(__file__))
-database_file = "sqlite:///{}".format(os.path.join(project_dir, "user_message_1.db"))
+database_file = "sqlite:///{}".format(os.path.join(project_dir, "user_message_9.db"))
 
 app = Flask(__name__)
 login_manager = LoginManager()
 login_manager.init_app(app)
 app.config['SECRET_KEY'] = '123445667'
 app.config["SQLALCHEMY_DATABASE_URI"] = database_file
-#app.config['SESSION_TYPE'] = 'twitter'
-#login = LoginManager(app)
-#Session(app)
 
 socketio = SocketIO(app)
-
 
 db = SQLAlchemy(app)
 
@@ -67,7 +63,8 @@ class User(UserMixin, db.Model):
 
 class UserMessage(db.Model):
 
-    user = db.Column(db.String(80), nullable=False, primary_key = True)
+    index = db.Column(db.Integer, nullable= False, primary_key=True)
+    user = db.Column(db.String(80), nullable=False)
     message = db.Column(db.String(80), nullable=False)
 
     def __init__(self, user, message):
@@ -77,6 +74,12 @@ class UserMessage(db.Model):
 
     def __repr__(self):
         return "<User: {}, Message: {}>".format(self.user, self.message)
+
+
+#class Links(db.Model):
+
+    #index = db.Column(db.Integer, nullable= False, primary_key=True)
+    #link = db.Column(db.String(100), nullable = False)
 
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
@@ -102,6 +105,11 @@ class RegistrationForm(FlaskForm):
         user = User.query.filter_by(email=email.data).first()
         if user is not None:
             raise ValidationError('Please use a different email address.')
+
+@app.route('/user_<name>')
+def userPage(name):
+    user_messages = UserMessage.query.filter_by(user=name).all()
+    return(render_template('message-page.html', messages = user_messages))
 
 
 @app.route('/logout')
@@ -151,20 +159,35 @@ def register():
 
 @app.route('/')
 def sessions():
-    return render_template('homepage.html', current_user = current_user)
+    return render_template('homepage.html', current_user = current_user, history = UserMessage.query.all())
 
 def messageReceived(methods=['GET', 'POST']):
     print('message was received!!!')
 
+@app.route('/message_<index>')
+def movieProfile(message):
+    item = UserMessage.query.get(message)
+
+    #need to repopulate databse with correct Path
+    link = 'static/' + movie_actor_map[title][1]
+    return render_template('message-page.html', user = item.username, message = item.message)
+
 @socketio.on('my event')
 def handle_my_custom_event(json, methods=['GET', 'POST']):
+
     print('received my event: ' + str(json))
 
     #add log to the database
-    #user_message = UserMessage(user=json.username, message=json.message)
-    #db.session.add()
-    #db.session.commit()
-    socketio.emit('my response', json, callback=messageReceived)
+    print(current_user.username)
+    #print(json['message'])
+    print(json)
+
+    if ('message' in json):
+        user_message = UserMessage(user=current_user.username, message=json['message'])
+        db.session.add(user_message)
+        db.session.commit()
+
+    socketio.emit('my response', json, callback=messageReceived, broadcast = True)
 
 
 def create_connection(db_file):
@@ -177,6 +200,6 @@ def create_connection(db_file):
         print(e)
 
 if __name__ == '__main__':
-    create_connection("C:\\sqlite\db\user_message_1.db")
+    create_connection("C:\\sqlite\db\user_message_8.db")
     db.create_all()
     socketio.run(app, debug=True)

@@ -15,7 +15,11 @@
         <div class='logout-button' onclick="location.href = '/logout';">Logout</div>
         </div>
   </div>
-   <div class="message_holder"></div>
+   <div class="message_holder">
+     {% for msg in history %}
+      <li>{{msg.message}}</li>
+     {% endfor %}
+   </div>
    <form action="" method="POST">
      <input type="text" class="message" placeholder="Messages"/>
      <input type="submit"/>
@@ -37,6 +41,7 @@
          e.preventDefault()
          let message = $( 'input.message' ).val()
          socket.emit( 'my event', {
+           username: '{{current_user.username}}',
            message : message
          })
          $( 'input.message' ).val( '' ).focus()
@@ -44,10 +49,8 @@
      } )
 
      socket.on( 'my response', function( msg ) {
-
        if (typeof msg.message !== 'undefined') {
-         debugger;
-          message = '<div class="user-chat">' + 'User: '  + '{{current_user.username}}' +  "</div>" + msg.message
+          message = '<div class="user-chat" onclick = "location.href = ' +  '/user_' + msg.username + '">' + 'User: '  + msg.username +  "</div>" + msg.message
           $( 'div.message_holder' ).append( '<div>' + message +'</div>' )
        }
 
