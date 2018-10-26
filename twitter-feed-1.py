@@ -24,7 +24,7 @@ import sqlite3
 import re
 
 project_dir = os.path.dirname(os.path.abspath(__file__))
-database_file = "sqlite:///{}".format(os.path.join(project_dir, "user_message_11.db"))
+database_file = "sqlite:///{}".format(os.path.join(project_dir, "user_message_13.db"))
 
 app = Flask(__name__)
 login_manager = LoginManager()
@@ -81,8 +81,11 @@ class UserMessage(db.Model):
 class Links(db.Model):
     index = db.Column(db.Integer, nullable= False, primary_key=True)
     link = db.Column(db.String(100), nullable = False)
-    def __init__(self, link):
+    original = db.Column(db.String(200), nullable = False)
+
+    def __init__(self, link, original):
         self.link = link
+        self.original = original
         super(Links,self).__init__()
 
 class LoginForm(FlaskForm):
@@ -184,21 +187,15 @@ def handle_my_custom_event(json, methods=['GET', 'POST']):
     print(current_user.username)
     #print(json['message'])
     print(json)
+    print('printing message')
 
     if ('message' in json):
-        #check if message is a link
-        #if so, add the link to link database
-        #url = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+] |[!*\(\), ]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', json['message'])
-        if ('www' in json['message']):
-            print('in here')
-            link_entry = Links(link=json['message'])
+        urls = re.findall('https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+', json['message'])
+        if (urls):
+            link_entry = Links(link= str(urls), original=json['message'])
             db.session.add(link_entry)
             db.session.commit()
-        print('out of if statement')
 
-        #if (json['message'][0:3] == 'www'):
-        #db.session.add(url)
-        #    db.session.commit()
         user_message = UserMessage(user=current_user.username, message=json['message'])
         db.session.add(user_message)
         db.session.commit()
@@ -216,6 +213,6 @@ def create_connection(db_file):
         print(e)
 
 if __name__ == '__main__':
-    create_connection("C:\\sqlite\db\user_message_11.db")
+    create_connection("C:\\sqlite\db\user_message_13.db")
     db.create_all()
     socketio.run(app, debug=True)

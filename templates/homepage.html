@@ -14,7 +14,8 @@
    </div>
    <div class='user-profile-container'>
         {% if current_user.is_authenticated %}
-        <p class='current-user'>Welcome <b>{{ current_user.username }}</b>!</p>
+        <p class='current-user'>Welcome</p>
+        <div class='user_name' onclick="location.href = '/user_{{current_user.username}}';"><b>{{ current_user.username }}</b></div>
         {% endif %}
   </div>
   </div>
@@ -26,9 +27,18 @@
      </div>
      <button class='link_button' onclick="displayLinks()">Show Links</button>
      <div id='links'>
+      <table>
+       <tr>
+         <th>Link</th>
+         <th>Original Message</th>
+       </tr>
        {% for link in links %}
-        <p>{{link.link}}</p>
+       <tr>
+         <td>{{link.link}}</td>
+         <td>{{link.original}}</td>
+       </tr>
        {% endfor %}
+     </table>
      </div>
  </div>
    <form action="" method="POST">
