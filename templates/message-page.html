@@ -6,7 +6,10 @@
     </head>
     <body>
       <div class='container'>
-        <h1 class='header'>User Messages: {{messages}}</h1>
+        <h1 class='header'>{{name}}'s Messages</h1>
+        {% for msg in messages %}
+         <li>{{msg.message}}</li>
+        {% endfor %}
       </div>
       <script>
       </script>

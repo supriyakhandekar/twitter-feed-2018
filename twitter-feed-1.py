@@ -7,6 +7,7 @@ from flask_socketio import SocketIO
 
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo
+import validators
 
 
 from flask_sqlalchemy import SQLAlchemy
@@ -20,9 +21,10 @@ from flask_login import current_user, login_user
 
 import os
 import sqlite3
+import re
 
 project_dir = os.path.dirname(os.path.abspath(__file__))
-database_file = "sqlite:///{}".format(os.path.join(project_dir, "user_message_9.db"))
+database_file = "sqlite:///{}".format(os.path.join(project_dir, "user_message_11.db"))
 
 app = Flask(__name__)
 login_manager = LoginManager()
@@ -76,10 +78,12 @@ class UserMessage(db.Model):
         return "<User: {}, Message: {}>".format(self.user, self.message)
 
 
-#class Links(db.Model):
-
-    #index = db.Column(db.Integer, nullable= False, primary_key=True)
-    #link = db.Column(db.String(100), nullable = False)
+class Links(db.Model):
+    index = db.Column(db.Integer, nullable= False, primary_key=True)
+    link = db.Column(db.String(100), nullable = False)
+    def __init__(self, link):
+        self.link = link
+        super(Links,self).__init__()
 
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
@@ -109,13 +113,13 @@ class RegistrationForm(FlaskForm):
 @app.route('/user_<name>')
 def userPage(name):
     user_messages = UserMessage.query.filter_by(user=name).all()
-    return(render_template('message-page.html', messages = user_messages))
+    return(render_template('message-page.html', messages = user_messages, name = name))
 
 
 @app.route('/logout')
 def logout():
     logout_user()
-    return redirect('/')
+    return render_template('homepage.html', current_user = current_user)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -159,7 +163,7 @@ def register():
 
 @app.route('/')
 def sessions():
-    return render_template('homepage.html', current_user = current_user, history = UserMessage.query.all())
+    return render_template('homepage.html', current_user = current_user, history = UserMessage.query.all(), links = Links.query.all())
 
 def messageReceived(methods=['GET', 'POST']):
     print('message was received!!!')
@@ -176,13 +180,25 @@ def movieProfile(message):
 def handle_my_custom_event(json, methods=['GET', 'POST']):
 
     print('received my event: ' + str(json))
-
     #add log to the database
     print(current_user.username)
     #print(json['message'])
     print(json)
 
     if ('message' in json):
+        #check if message is a link
+        #if so, add the link to link database
+        #url = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+] |[!*\(\), ]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', json['message'])
+        if ('www' in json['message']):
+            print('in here')
+            link_entry = Links(link=json['message'])
+            db.session.add(link_entry)
+            db.session.commit()
+        print('out of if statement')
+
+        #if (json['message'][0:3] == 'www'):
+        #db.session.add(url)
+        #    db.session.commit()
         user_message = UserMessage(user=current_user.username, message=json['message'])
         db.session.add(user_message)
         db.session.commit()
@@ -200,6 +216,6 @@ def create_connection(db_file):
         print(e)
 
 if __name__ == '__main__':
-    create_connection("C:\\sqlite\db\user_message_8.db")
+    create_connection("C:\\sqlite\db\user_message_11.db")
     db.create_all()
     socketio.run(app, debug=True)

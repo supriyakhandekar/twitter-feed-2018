@@ -29,6 +29,7 @@ def landingPage():
     return(render_template('homepage.html'))
 
 
+
 if __name__ == "__main__":
     #create_connection("C:\\sqlite\db\final_1.db")
     #db.create_all()
@@ -54,7 +55,6 @@ socket.on('message', function(msg) {
 });
 
 });
-
 
 $('#sendButton').on("click", function() {
 

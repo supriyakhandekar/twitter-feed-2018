@@ -5,34 +5,42 @@
    <link rel="stylesheet" href="{{ url_for('static', filename='css/homepage.css') }}">
  </head>
  <body>
-
-   <h3 class='header'>Welcome to Your Twitter Feed</h3>
+   <div class='top-container'>
+     <h3 class='header'>Welcome to Your Twitter Feed</h3>
+     <div class='login-logout-container'>
+       <div class='login-button' onclick="location.href = '/login';">Login</div>
+       <div class='logout-button' onclick="location.href = '/logout';">Logout</div>
+     </div>
+   </div>
    <div class='user-profile-container'>
-        <div onclick="location.href = '/login';">Login</div>
         {% if current_user.is_authenticated %}
         <p class='current-user'>Welcome <b>{{ current_user.username }}</b>!</p>
         {% endif %}
-        <div class='logout-button' onclick="location.href = '/logout';">Logout</div>
-        </div>
   </div>
-   <div class="message_holder">
-     {% for msg in history %}
-      <li>{{msg.message}}</li>
-     {% endfor %}
-   </div>
+  </div>
+  <div class='message-container'>
+     <div class="message_holder">
+       {% for msg in history %}
+        <p>{{msg.user}}: {{msg.message}}</p>
+       {% endfor %}
+     </div>
+     <button class='link_button' onclick="displayLinks()">Show Links</button>
+     <div id='links'>
+       {% for link in links %}
+        <p>{{link.link}}</p>
+       {% endfor %}
+     </div>
+ </div>
    <form action="" method="POST">
      <input type="text" class="message" placeholder="Messages"/>
      <input type="submit"/>
    </form>
-
    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.min.js"></script>
    <script type="text/javascript">
-
      //var name = current_user.username
      var socket = io.connect('http://' + document.domain + ':' + location.port);
-
      socket.on( 'connect', function() {
        socket.emit( 'my event', {
          data: 'User Connected'
@@ -55,6 +63,17 @@
        }
 
      })
+
+    function displayLinks() {
+        var x = document.getElementById("links");
+        if (x.style.display === "none") {
+            x.style.display = "block";
+        } else {
+            x.style.display = "none";
+        }
+        x.scrollTop = x.scrollHeight;
+    }
+
    </script>
 
  </body>
